@@ -9,7 +9,7 @@ from torchvision import transforms
 from torchvision.utils import make_grid, save_image
 from tensorboardX import SummaryWriter
 from tqdm import trange
-from pytorch_gan_metrics import get_inception_score_and_fid
+from pytorch_image_generation_metrics import get_inception_score_and_fid
 
 from datasets import get_dataset
 from losses import HingeLoss, BCEWithLogits, Wasserstein

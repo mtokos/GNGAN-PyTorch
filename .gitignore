@@ -15,7 +15,6 @@ iccv21
 
 # data
 data
-stats
 *.png
 _cache_*
 figures
