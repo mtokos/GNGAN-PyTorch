@@ -13,27 +13,29 @@ from pytorch_image_generation_metrics import get_inception_score_and_fid
 
 from datasets import get_dataset
 from losses import HingeLoss, BCEWithLogits, Wasserstein
-from models import resnet, dcgan, biggan
-from models.gradnorm import normalize_gradient
+
+from models import dcgan_module
+from models import resnet_module
+from models import biggan_module
+
+from models.gradnorm import get_gradient
 from utils import ema, save_images, infiniteloop, set_seed, module_no_grad
 
-torch.backends.cudnn.benchmark = False
-torch.backends.cudnn.deterministic = True
 
 net_G_models = {
-    'dcgan.32': dcgan.Generator32,
-    'dcgan.48': dcgan.Generator48,
-    'resnet.32': resnet.ResGenerator32,
-    'resnet.48': resnet.ResGenerator48,
-    'biggan.32': biggan.Generator32,
+    'dcgan.32': dcgan_module.Generator32,
+    'dcgan.48': dcgan_module.Generator48,
+    'resnet.32': resnet_module.ResGenerator32,
+    'resnet.48': resnet_module.ResGenerator48,
+    'biggan.32': biggan_module.Generator32,
 }
 
 net_D_models = {
-    'dcgan.32': dcgan.Discriminator32,
-    'dcgan.48': dcgan.Discriminator48,
-    'resnet.32': resnet.ResDiscriminator32,
-    'resnet.48': resnet.ResDiscriminator48,
-    'biggan.32': biggan.Discriminator32,
+    'dcgan.32': dcgan_module.Discriminator32,
+    'dcgan.48': dcgan_module.Discriminator48,
+    'resnet.32': resnet_module.ResDiscriminator32,
+    'resnet.48': resnet_module.ResDiscriminator48,
+    'biggan.32': biggan_module.Discriminator32,
 }
 
 loss_fns = {
@@ -82,7 +84,7 @@ flags.DEFINE_string('fid_stats', './stats/cifar10.train.npz', 'FID cache')
 flags.DEFINE_string('logdir', './logs/GN-GAN_CIFAR10_RES_0', 'log folder')
 
 
-device = torch.device('cuda')
+device = torch.device('cuda:0')
 
 
 def generate_images(net_G):
@@ -94,7 +96,7 @@ def generate_images(net_G):
             y = torch.randint(
                 FLAGS.n_classes, (FLAGS.batch_size_G,)).to(device)
             fake = (net_G(z, y) + 1) / 2
-            images.append(fake)
+            images.append(fake.cpu())
     images = torch.cat(images, dim=0)
     return images[:FLAGS.num_images]
 
@@ -130,11 +132,11 @@ def consistency_loss(net_D, real, y_real, pred_real,
                         transforms.ToTensor(),
                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                      ])):
-    aug_real = real.detach().clone()
+    aug_real = real.detach().clone().cpu()
     for idx, img in enumerate(aug_real):
         aug_real[idx] = transform(img)
     aug_real = aug_real.to(device)
-    pred_aug = normalize_gradient(net_D, aug_real, y=y_real)
+    pred_aug = get_gradient(net_D, aug_real, y=y_real)
     loss = ((pred_aug - pred_real) ** 2).mean()
     return loss
 
@@ -234,24 +236,24 @@ def train():
                     x_fake = net_G(z_, y_fake).detach()
                 x_real_fake = torch.cat([x_real, x_fake], dim=0)
                 y_real_fake = torch.cat([y_real, y_fake], dim=0)
-                pred = normalize_gradient(net_D, x_real_fake, y=y_real_fake)
+                pred = get_gradient(net_D, x_real_fake, y=y_real_fake)
                 pred_real, pred_fake = torch.split(
                     pred, [x_real.shape[0], x_fake.shape[0]])
 
                 loss, loss_real, loss_fake = loss_fn(pred_real, pred_fake)
                 if FLAGS.cr > 0:
                     loss_cr = consistency_loss(
-                        net_D, x_real, y_real, pred_real).to(device)
+                        net_D, x_real, y_real, pred_real)
                 else:
-                    loss_cr = torch.tensor(0.).to(device)
+                    loss_cr = torch.tensor(0.)
                 loss_all = loss + FLAGS.cr * loss_cr
                 loss_all.backward()
                 optim_D.step()
 
-                loss_sum += loss.item()
-                loss_real_sum += loss_real.item()
-                loss_fake_sum += loss_fake.item()
-                loss_cr_sum += loss_cr.item()
+                loss_sum += loss.cpu().item()
+                loss_real_sum += loss_real.cpu().item()
+                loss_fake_sum += loss_fake.cpu().item()
+                loss_cr_sum += loss_cr.cpu().item()
 
             loss = loss_sum / FLAGS.n_dis
             loss_real = loss_real_sum / FLAGS.n_dis
@@ -274,7 +276,7 @@ def train():
                 y_ = torch.randint(
                     FLAGS.n_classes, (FLAGS.batch_size_G,)).to(device)
                 fake = net_G(z_, y_)
-                pred_fake = normalize_gradient(net_D, fake, y=y_)
+                pred_fake = get_gradient(net_D, fake, y=y_)
                 loss = loss_fn(pred_fake)
                 loss.backward()
                 optim_G.step()
@@ -293,8 +295,8 @@ def train():
             # sample from fixed z
             if step == 1 or step % FLAGS.sample_step == 0:
                 with torch.no_grad():
-                    fake_net = net_G(fixed_z, fixed_y)
-                    fake_ema = ema_G(fixed_z, fixed_y)
+                    fake_net = net_G(fixed_z, fixed_y).cpu()
+                    fake_ema = ema_G(fixed_z, fixed_y).cpu()
                 grid_net = (make_grid(fake_net) + 1) / 2
                 grid_ema = (make_grid(fake_ema) + 1) / 2
                 writer.add_image('sample_ema', grid_ema, step)

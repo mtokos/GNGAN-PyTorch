@@ -4,7 +4,7 @@
 --batch_size_D=64
 --batch_size_G=128
 --accumulation=1
---num_workers=8
+--num_workers=32
 --lr_D=0.0002
 --lr_G=0.0002
 --n_dis=5

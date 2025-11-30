@@ -1,5 +1,5 @@
---dataset=cifar10.32
---arch=dcgan.32
+--dataset=stl10.48
+--arch=dcgan.48
 --loss=bce
 --total_steps=200000
 --lr_decay_start=200000
@@ -10,7 +10,7 @@
 --lr_G=0.0002
 --n_dis=1
 --z_dim=128
---cr=5
+--cr=0
 --n_classes=1
 
 --ema_decay=0.9999
@@ -21,5 +21,5 @@
 --eval_step=5000
 --save_step=20000
 --num_images=50000
---fid_stats=./stats/cifar10.train.npz
---logdir=./logs/GN-GAN-CR_CIFAR10_CNN_0
+--fid_stats=./stats/stl10.unlabeled.48.npz
+--logdir=./logs/GN-GAN_STL10_CNN_MODULE_0

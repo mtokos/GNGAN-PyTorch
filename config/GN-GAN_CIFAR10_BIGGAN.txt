@@ -1,8 +1,8 @@
 --dataset=cifar10.32
 --arch=biggan.32
 --loss=hinge
---total_steps=125000
---lr_decay_start=125000
+--total_steps=75000
+--lr_decay_start=75000
 --batch_size_D=50
 --batch_size_G=50
 --num_workers=8
