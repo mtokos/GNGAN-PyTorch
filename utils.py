@@ -8,7 +8,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 
 
-device = torch.device('cuda:0')
+device = torch.device('cpu')
 
 
 def save_images(images, output_dir, verbose=False):
@@ -28,7 +28,7 @@ def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
+    #torch.cuda.manual_seed(seed)
     # torch.backends.cudnn.deterministic = True
     # torch.backends.cudnn.benchmark = False
 

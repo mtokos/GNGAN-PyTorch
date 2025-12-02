@@ -44,46 +44,39 @@ class Discriminator(nn.Module):
         self.M = M
 
         # M
-        self.first = nn.Sequential(
+        self.block1 = GradNorm(nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm1 = GradNorm(Discriminator)
-        self.second = nn.Sequential(
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
+        self.block2 = GradNorm(nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm2 = GradNorm(Discriminator)
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
         # M / 2
-        self.third = nn.Sequential(
+        self.block3 = GradNorm(nn.Sequential(
             nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm3 = GradNorm(Discriminator)
-        self.fourth = nn.Sequential(
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
+        self.block4 = GradNorm(nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm4 = GradNorm(Discriminator)
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
         # M / 4
-        self.fifth = nn.Sequential(
+        self.block5 = GradNorm(nn.Sequential(
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm5 = GradNorm(Discriminator)
-        self.sixth = nn.Sequential(
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
+        self.block6 = GradNorm(nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm6 = GradNorm(Discriminator)
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
         # M / 8
-        self.seventh = self.Sequential(
+        self.block7 = GradNorm(nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
-        )
-        self.gradnorm7 = GradNorm(Discriminator)
+            nn.LeakyReLU(0.1, inplace=False)
+        ))
 
-        self.linear = nn.Linear(M // 8 * M // 8 * 512, 1)
+        self.linear = GradNorm(nn.Linear(M // 8 * M // 8 * 512, 1))
         self.initialize()
 
     def initialize(self):
@@ -106,20 +99,13 @@ class Discriminator(nn.Module):
                     m.bias.data.div_(a)
 
     def forward(self, x, *args, **kwargs):
-        x = self.first(x)
-        x = self.gradnorm1(x)
-        x = self.second(x)
-        x = self.gradnorm2(x)
-        x = self.third(x)
-        x = self.gradnorm3(x)
-        x = self.fourth(x)
-        x = self.gradnorm4(x)
-        x = self.fifth(x)
-        x = self.gradnorm5(x)
-        x = self.sixth(x)
-        x = self.gradnorm6(x)
-        x = self.seventh(x)
-        x = self.gradnorm7(x)
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = self.block4(x)
+        x = self.block5(x)
+        x = self.block6(x)
+        x = self.block7(x)
         x = torch.flatten(x, start_dim=1)
         x = self.linear(x)
         return x

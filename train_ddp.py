@@ -55,7 +55,7 @@ flags.DEFINE_integer('total_steps', 100000, "total number of training steps")
 flags.DEFINE_integer('batch_size_D', 64, "batch size for discriminator")
 flags.DEFINE_integer('batch_size_G', 128, "batch size for generator")
 flags.DEFINE_integer('accumulation', 1, 'batch num to accumulate gradient')
-flags.DEFINE_integer('num_workers', 32, "dataloader workers")
+flags.DEFINE_integer('num_workers', 10, "dataloader workers")
 flags.DEFINE_float('lr_D', 2e-4, "Discriminator learning rate")
 flags.DEFINE_float('lr_G', 2e-4, "Generator learning rate")
 flags.DEFINE_multi_float('betas', [0.0, 0.9], "for Adam")
@@ -93,7 +93,7 @@ def image_generator(net_G):
 
 
 def eval_save(rank, world_size):
-    device = torch.device('cuda:%d' % rank)
+    device = torch.device('cpu:%d' % rank)
 
     ckpt = torch.load(
         os.path.join(FLAGS.logdir, 'best_model.pt'), map_location='cpu')
@@ -176,7 +176,7 @@ def infiniteloop(dataloader, sampler, step=0):
 
 
 def train(rank, world_size):
-    device = torch.device('cuda:%d' % rank)
+    device = torch.device('cpu:%d' % rank)
 
     local_batch_size_D = FLAGS.batch_size_D // world_size
     local_batch_size_G = FLAGS.batch_size_G // world_size

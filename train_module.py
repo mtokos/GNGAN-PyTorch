@@ -61,7 +61,7 @@ flags.DEFINE_integer('total_steps', 200000, "total number of training steps")
 flags.DEFINE_integer('lr_decay_start', 0, 'apply linearly decay to lr')
 flags.DEFINE_integer('batch_size_D', 64, "batch size for discriminator")
 flags.DEFINE_integer('batch_size_G', 128, "batch size for generator")
-flags.DEFINE_integer('num_workers', 16, "dataloader workers")
+flags.DEFINE_integer('num_workers', 10, "dataloader workers")
 flags.DEFINE_float('lr_D', 4e-4, "Discriminator learning rate")
 flags.DEFINE_float('lr_G', 2e-4, "Generator learning rate")
 flags.DEFINE_multi_float('betas', [0.0, 0.9], "for Adam")
@@ -84,7 +84,7 @@ flags.DEFINE_string('fid_stats', './stats/cifar10.train.npz', 'FID cache')
 flags.DEFINE_string('logdir', './logs/GN-GAN_CIFAR10_RES_0', 'log folder')
 
 
-device = torch.device('cuda:0')
+device = torch.device('cpu')
 
 
 def generate_images(net_G):

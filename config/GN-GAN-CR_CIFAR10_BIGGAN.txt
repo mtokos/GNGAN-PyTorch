@@ -5,7 +5,7 @@
 --lr_decay_start=125000
 --batch_size_D=50
 --batch_size_G=50
---num_workers=32
+--num_workers=10
 --lr_D=0.0002
 --lr_G=0.0001
 --betas=0.0
