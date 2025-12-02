@@ -11,9 +11,9 @@ def normalize_gradient(net_D, x, **kwargs):
     f = net_D(x, **kwargs)
     grad = torch.autograd.grad(
         f, [x], torch.ones_like(f), create_graph=True, retain_graph=True)[0]
-    grad_norm = torch.norm(torch.flatten(grad, start_dim=1).cpu(), p=2, dim=1)
+    grad_norm = torch.norm(torch.flatten(grad, start_dim=1).cuda(), p=2, dim=1)
     grad_norm = grad_norm.view(-1, *[1 for _ in range(len(f.shape) - 1)])
-    f_hat = (f / (grad_norm.cpu() + torch.abs(f)))
+    f_hat = (f / (grad_norm.cuda() + torch.abs(f)))
     return f_hat
 
 def get_gradient(net_D, x, **kwargs):

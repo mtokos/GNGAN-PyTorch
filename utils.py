@@ -8,7 +8,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 
 
 def save_images(images, output_dir, verbose=False):

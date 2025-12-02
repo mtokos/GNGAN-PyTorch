@@ -84,7 +84,7 @@ flags.DEFINE_string('fid_stats', './stats/cifar10.train.npz', 'FID cache')
 flags.DEFINE_string('logdir', './logs/GN-GAN_CIFAR10_RES_0', 'log folder')
 
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 
 
 def generate_images(net_G):
@@ -96,7 +96,7 @@ def generate_images(net_G):
             y = torch.randint(
                 FLAGS.n_classes, (FLAGS.batch_size_G,)).to(device)
             fake = (net_G(z, y) + 1) / 2
-            images.append(fake.cpu())
+            images.append(fake.cuda())
     images = torch.cat(images, dim=0)
     return images[:FLAGS.num_images]
 
@@ -132,7 +132,7 @@ def consistency_loss(net_D, real, y_real, pred_real,
                         transforms.ToTensor(),
                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                      ])):
-    aug_real = real.detach().clone().cpu()
+    aug_real = real.detach().clone().cuda()
     for idx, img in enumerate(aug_real):
         aug_real[idx] = transform(img)
     aug_real = aug_real.to(device)
@@ -250,10 +250,10 @@ def train():
                 loss_all.backward()
                 optim_D.step()
 
-                loss_sum += loss.cpu().item()
-                loss_real_sum += loss_real.cpu().item()
-                loss_fake_sum += loss_fake.cpu().item()
-                loss_cr_sum += loss_cr.cpu().item()
+                loss_sum += loss.cuda().item()
+                loss_real_sum += loss_real.cuda().item()
+                loss_fake_sum += loss_fake.cuda().item()
+                loss_cr_sum += loss_cr.cuda().item()
 
             loss = loss_sum / FLAGS.n_dis
             loss_real = loss_real_sum / FLAGS.n_dis
@@ -295,8 +295,8 @@ def train():
             # sample from fixed z
             if step == 1 or step % FLAGS.sample_step == 0:
                 with torch.no_grad():
-                    fake_net = net_G(fixed_z, fixed_y).cpu()
-                    fake_ema = ema_G(fixed_z, fixed_y).cpu()
+                    fake_net = net_G(fixed_z, fixed_y).cuda()
+                    fake_ema = ema_G(fixed_z, fixed_y).cuda()
                 grid_net = (make_grid(fake_net) + 1) / 2
                 grid_ema = (make_grid(fake_ema) + 1) / 2
                 writer.add_image('sample_ema', grid_ema, step)

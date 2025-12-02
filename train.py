@@ -82,7 +82,7 @@ flags.DEFINE_string('fid_stats', './stats/cifar10.train.npz', 'FID cache')
 flags.DEFINE_string('logdir', './logs/GN-GAN_CIFAR10_RES_0', 'log folder')
 
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 
 
 def generate_images(net_G):

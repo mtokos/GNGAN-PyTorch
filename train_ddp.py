@@ -87,16 +87,16 @@ def image_generator(net_G):
             fake = (net_G(z) + 1) / 2
             fake_list = [torch.empty_like(fake) for _ in range(world_size)]
             dist.all_gather(fake_list, fake)
-            fake = torch.cat(fake_list, dim=0).cpu()
+            fake = torch.cat(fake_list, dim=0).cuda()
             yield fake[:FLAGS.num_images - idx]
     del fake, fake_list
 
 
 def eval_save(rank, world_size):
-    device = torch.device('cpu:%d' % rank)
+    device = torch.device('cuda:%d' % rank)
 
     ckpt = torch.load(
-        os.path.join(FLAGS.logdir, 'best_model.pt'), map_location='cpu')
+        os.path.join(FLAGS.logdir, 'best_model.pt'), map_location='cuda')
     net_G = net_G_models[FLAGS.arch](FLAGS.z_dim).to(device)
     net_G = torch.nn.SyncBatchNorm.convert_sync_batchnorm(net_G)
     net_G = DDP(net_G, device_ids=[rank], output_device=rank)
@@ -220,7 +220,7 @@ def train(rank, world_size):
 
     if FLAGS.resume:
         ckpt = torch.load(
-            os.path.join(FLAGS.logdir, 'model.pt'), map_location='cpu')
+            os.path.join(FLAGS.logdir, 'model.pt'), map_location='cuda')
         net_G.load_state_dict(ckpt['net_G'])
         net_D.load_state_dict(ckpt['net_D'])
         ema_G.load_state_dict(ckpt['ema_G'])
@@ -337,8 +337,8 @@ def train(rank, world_size):
                 dist.all_gather(fake_ema_list, fake_ema)
                 dist.all_gather(fake_net_list, fake_net)
                 if rank == 0:
-                    fake_ema = torch.cat(fake_ema_list, dim=0).cpu()
-                    fake_net = torch.cat(fake_net_list, dim=0).cpu()
+                    fake_ema = torch.cat(fake_ema_list, dim=0).cuda()
+                    fake_net = torch.cat(fake_net_list, dim=0).cuda()
                     grid_ema = make_grid(fake_ema)
                     grid_net = make_grid(fake_ema)
                     writer.add_image('sample_ema', grid_ema, step)
