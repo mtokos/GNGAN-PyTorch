@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 from functools import partial
 
-sn = partial(torch.nn.utils.spectral_norm, eps=1e-6)
+sn = partial(torch.nn.utils.spectral_norm, eps=1e-5)
 
 
 class Generator(nn.Module):

@@ -13,12 +13,19 @@ from pytorch_image_generation_metrics import get_inception_score_and_fid
 
 from datasets import get_dataset
 from losses import HingeLoss, BCEWithLogits, Wasserstein
-from models import resnet, dcgan, biggan
-from models.gradnorm import normalize_gradient
+from SN_models import resnet, dcgan, biggan
+
 from utils import ema, save_images, infiniteloop, set_seed, module_no_grad
 
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
+
+def normalize_gradient(net_D, x, **kwargs): #this should disable normalize grad from doing anything 
+    x.requires_grad_(True)
+    f = net_D(x, **kwargs)
+    return f
+
+
 
 net_G_models = {
     'dcgan.32': dcgan.Generator32,
