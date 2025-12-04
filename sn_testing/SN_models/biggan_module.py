@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.gradnorm import GradNorm
 
 sn = partial(torch.nn.utils.spectral_norm, eps=1e-6)
 
@@ -170,7 +169,7 @@ class Generator128(nn.Module):
 class OptimizedDisblock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
-        self.shortcut = GradNorm(nn.Sequential(
+        self.shortcut = sn(nn.Sequential(
             nn.AvgPool2d(2),
             nn.Conv2d(in_channels, out_channels, 1, padding=0)))
         self.residual = nn.Sequential(
@@ -242,18 +241,18 @@ class Discriminator128(nn.Module):
             OptimizedDisblock(3, ch * 1),          # 3 x 128 x 128
             Attention(ch, False),                  # ch*1 x 64 x 64
             DisBlock(ch * 1, ch * 2, down=True),   # ch*1 x 32 x 32
-            GradNorm(Discriminator128(ch * 2)),
+            sn(Discriminator128(ch * 2)),
             DisBlock(ch * 2, ch * 4, down=True),   # ch*2 x 16 x 16
-            GradNorm(Discriminator128(ch * 4)),
+            sn(Discriminator128(ch * 4)),
             DisBlock(ch * 4, ch * 8, down=True),   # ch*4 x 8 x 8
-            GradNorm(Discriminator128(ch * 8)),
+            sn(Discriminator128(ch * 8)),
             DisBlock(ch * 8, ch * 16, down=True),  # ch*8 x 4 x 4
-            GradNorm(Discriminator128(ch * 16)),
+            sn(Discriminator128(ch * 16)),
             DisBlock(ch * 16, ch * 16),            # ch*16 x 4 x 4
-            GradNorm(Discriminator128(ch * 16)),
+            sn(Discriminator128(ch * 16)),
             nn.ReLU(inplace=True),                 # ch*16 x 4 x 4
         )
-        self.gradnorm = GradNorm(Discriminator128(ch * 16))
+        self.gradnorm = sn(Discriminator128(ch * 16))
         self.linear = nn.Linear(ch * 16, 1)
         self.embedding = nn.Embedding(n_classes, ch * 16)
         # res128_weights_init(self)
