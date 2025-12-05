@@ -1,6 +1,13 @@
-## NOTE
-THIS IS A FORK OF A FORK TO TEST FOR SN 
-THE FILES ARE IN SN_TESTING
+## NAMES:
+    Michael Tokos
+    Jason Li
+## CONTRIBUTIONS:
+    Michael Tokos:
+        Modified models to use module-wise Gradient Normalization as opposed to model-wise GN
+    Jason Li:
+        Modified models to use Spectral Normalization for testing, located within sn_testing folder.
+## IMPORTANT CHANGES:
+    Main repository is now module-wise Gradient Normalization
 ## Requirements
 - Python 3.8.9
 - Python packages
