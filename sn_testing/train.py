@@ -184,7 +184,7 @@ def train():
     G_size = 0
     for param in net_G.parameters():
         G_size += param.data.nelement()
-    print('D params: %d, G params: %d' % (D_size, G_size))
+    #print('D params: %d, G params: %d' % (D_size, G_size))
 
     writer = SummaryWriter(FLAGS.logdir)
     if FLAGS.resume:
@@ -269,6 +269,8 @@ def train():
             writer.add_scalar('loss_real', loss_real, step)
             writer.add_scalar('loss_fake', loss_fake, step)
             writer.add_scalar('loss_cr', loss_cr, step)
+
+            print('loss:', loss, 'loss_real:', loss_real, 'loss_fake:', loss_fake, 'loss_cr', loss_cr, 'step:', step)
 
             pbar.set_postfix(
                 loss_real='%.3f' % loss_real,

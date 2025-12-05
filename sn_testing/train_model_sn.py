@@ -17,7 +17,8 @@ from losses import HingeLoss, BCEWithLogits, Wasserstein
 from SN_models import dcgan_module
 from SN_models import resnet_module
 
-from models.gradnorm import get_gradient
+from SN_models import gradnorm
+
 from utils import ema, save_images, infiniteloop, set_seed, module_no_grad
 
 
@@ -129,7 +130,7 @@ def consistency_loss(net_D, real, y_real, pred_real,
     for idx, img in enumerate(aug_real):
         aug_real[idx] = transform(img)
     aug_real = aug_real.to(device)
-    pred_aug = get_gradient(net_D, aug_real, y=y_real)
+    pred_aug = gradnorm.get_gradient(net_D, aug_real, y=y_real)
     loss = ((pred_aug - pred_real) ** 2).mean()
     return loss
 
@@ -172,7 +173,7 @@ def train():
     G_size = 0
     for param in net_G.parameters():
         G_size += param.data.nelement()
-    print('D params: %d, G params: %d' % (D_size, G_size))
+    #print('D params: %d, G params: %d' % (D_size, G_size))
 
     writer = SummaryWriter(FLAGS.logdir)
     if FLAGS.resume:
@@ -229,7 +230,7 @@ def train():
                     x_fake = net_G(z_, y_fake).detach()
                 x_real_fake = torch.cat([x_real, x_fake], dim=0)
                 y_real_fake = torch.cat([y_real, y_fake], dim=0)
-                pred = get_gradient(net_D, x_real_fake, y=y_real_fake)
+                pred = gradnorm.get_gradient(net_D, x_real_fake, y=y_real_fake)
                 pred_real, pred_fake = torch.split(
                     pred, [x_real.shape[0], x_fake.shape[0]])
 
@@ -269,7 +270,7 @@ def train():
                 y_ = torch.randint(
                     FLAGS.n_classes, (FLAGS.batch_size_G,)).to(device)
                 fake = net_G(z_, y_)
-                pred_fake = get_gradient(net_D, fake, y=y_)
+                pred_fake = gradnorm.get_gradient(net_D, fake, y=y_)
                 loss = loss_fn(pred_fake)
                 loss.backward()
                 optim_G.step()

@@ -77,7 +77,7 @@ class Discriminator(nn.Module):
             for m in self.modules():
                 if isinstance(m, (nn.Conv2d, nn.Linear)):
                     w_norm = m.weight.norm(p=2)
-                    print(m, w_norm)
+                    #print(m, w_norm)
                     w_norm = max(w_norm, min_norm)
                     w_norm = min(w_norm, max_norm)
                     a = a * w_norm
