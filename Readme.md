@@ -1,6 +1,8 @@
 ## NAMES:
     Michael Tokos
+        GitHub username: mtokos
     Jason Li
+        GitHub username: Jli2004
 ## CONTRIBUTIONS:
     Michael Tokos:
         Modified models to use module-wise Gradient Normalization as opposed to model-wise GN
