@@ -9,7 +9,7 @@
     Jason Li:
         Modified models to use Spectral Normalization for testing, located within sn_testing folder.
 ## IMPORTANT CHANGES:
-    Main repository is now module-wise Gradient Normalization
+    Main repository is now module-wise Gradient Normalization and it will run module-wise GN when run normally. The sn_testing folder is also a major change, although it should not effect anything within the main repository
 ## Requirements
 - Python 3.8.9
 - Python packages
